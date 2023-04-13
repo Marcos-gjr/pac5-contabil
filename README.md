@@ -7,7 +7,7 @@
 
 ```bash
 # Clone este repositório
-$ git clone <"https://github.com/Marcos-gjr/pac5-contabil.git">
+$ git clone https://github.com/Marcos-gjr/pac5-contabil.git
 
 # Acesse a pasta do projeto no terminal/cmd 
 $ cd pac5-contabil
