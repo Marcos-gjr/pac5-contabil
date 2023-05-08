@@ -1,25 +1,29 @@
-import logo from './logo.svg';
-import './App.css';
+import { Container  } from "react-bootstrap";
+import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 
-function App() {
+
+import Login from "./pages/Login";
+
+
+export default function App() {
+
+  
   return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
-    </div>
+    <Container fluid className="App">
+
+      <BrowserRouter>
+
+        <Routes>
+          <Route path='/' element={<Login/>} />
+          <Route path='*' element={<Navigate to='/'/>} />
+          <Route path='/dashboard' element={<Dashboard/>} />
+          <Route path='/requisicoes' element={<Requisicoes/>} />
+          {/* <Route path='/inserir' element={<InserirItem/>} /> */}
+          
+        
+        </Routes>
+      </BrowserRouter>
+ 
+    </Container>
   );
 }
-
-export default App;

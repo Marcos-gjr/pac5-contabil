@@ -11,7 +11,7 @@ export default function Login() {
                 <input class="input-write" type="text" placeholder="Usuário..."></input>
                 <input class="input-write" type="password" placeholder="Senha..."></input>
                 <input class="input-send" type="submit" value="ENTRAR"></input>
-                <a href=""><p>Esqueci minha senha</p></a>
+                <a href="/"><p>Esqueci minha senha</p></a>
             </form>
         </div>
     </div>
