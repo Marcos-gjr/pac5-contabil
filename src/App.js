@@ -1,8 +1,9 @@
 import { Container  } from "react-bootstrap";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 
-
 import Login from "./pages/Login";
+import Dashboard from "./pages/Dashboard";
+import Requisicoes from "./pages/Requisicoes";
 
 
 export default function App() {
