@@ -17,12 +17,12 @@ $ cd pac5-contabil
 
 # Acesse a pasta "backend" e instale as dependências necessárias relacionadas ao NodeJS e retorne a pasta raíz
 $ cd backend
-$ npm install express mysql2 cors body-parser
+$ npm install 
 $ cd ..
 
 # Acesse a pasta "frontend" e instale as dependências necessárias  relacionadas ao ReactJS e retorne a pasta raíz
 $ cd frontend
-$ npm install react-scripts react-router-dom react-toastify axios xml-js
+$ npm install 
 $ cd ..
 
 # Tenha 2 terminais simultâneos para que seja possível rodar o servidor NodeJS e ReactJS
