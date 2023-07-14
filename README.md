@@ -47,7 +47,7 @@ As seguintes ferramentas foram utilizadas no desenvolvimento deste projeto:
 - [Figma](https://www.figma.com/file/P25CE5hB9pVXozQZVpwwis/Untitled?type=design&node-id=0%3A1&t=g0tTvW62em3QJZfY-1)
 - [MySQL Workbench](https://www.mysql.com/products/workbench/)
 - [Github Actions](https://docs.github.com/pt/actions)
-- 
+  
 ---
 
 Made by:
