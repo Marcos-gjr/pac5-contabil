@@ -45,9 +45,45 @@ app.get('/api/getProduto/:id', (req, res) => {
     });
 });
 
+// Pegar os dados de um produto pelo ID com o estoque junto
+app.get('/api/getProdutoEstoque/:id', (req, res) => {
+    const id_produto = req.params.id;
+    const query = 'SELECT p.id_produto, p.nome_produto, e.qtd_produto_estoque FROM produtos p INNER JOIN estoque e ON id_produto_estoque = id_produto WHERE id_produto = ?';
+
+    db.query(query, [id_produto], (err, result) => {
+        if (err) {
+            console.error('Erro ao obter o produto:', err);
+            res.status(500).json({ error: 'Erro ao obter o produto.' });
+        } else {
+            if (result.length > 0) {
+                const produto = result[0];
+                res.status(200).json(produto);
+            } else {
+                res.status(404).json({ error: 'Produto não encontrado.' });
+            }
+        }
+    });
+});
+
+// Pegar os itens do fornecedor pelo id_aux do produto selecionado
+app.get('/api/getProdutosFornecedor/:id', (req, res) => {
+    const id_aux = req.params.id;
+    const query = 'SELECT * FROM fornecedor_itens WHERE aux = ?';
+    const values = [id_aux];
+
+    db.query(query, values, (err, result) => {
+        if (err) {
+            console.error('Erro ao obter os produtos:', err);
+            res.status(500).json({ error: 'Erro ao obter os produtos.' });
+        } else {
+            res.status(200).json(result);
+        }
+    });
+});
+
 // Pegar os produtos jutamente também com o estoque
 app.get('/api/getProdutosComEstoque', (req, res) => {
-    const query = 'SELECT p.id_produto, p.nome_produto, p.valor_produto, e.qtd_produto_estoque FROM produtos AS p INNER JOIN estoque AS e ON p.id_produto = e.id_produto_estoque';
+    const query = 'SELECT p.id_produto, p.nome_produto, p.valor_produto, e.qtd_produto_estoque, p.cod_aux FROM produtos AS p INNER JOIN estoque AS e ON p.id_produto = e.id_produto_estoque';
 
     db.query(query, (err, result) => {
         if (err) {
@@ -59,11 +95,143 @@ app.get('/api/getProdutosComEstoque', (req, res) => {
     });
 });
 
+// Pegar os produtos jutamente também com o codigo auxiliar
+app.get('/api/getProdutosCodAux', (req, res) => {
+    const query = 'SELECT id_produto, nome_produto, valor_produto, cod_aux FROM produtos';
+
+    db.query(query, (err, result) => {
+        if (err) {
+            console.error('Erro ao obter os produtos com estoque:', err);
+            res.status(500).json({ error: 'Erro ao obter os produtos com estoque.' });
+        } else {
+            res.status(200).json(result);
+        }
+    });
+});
+
+// Pegar os produtos jutamente também com o estoque e as movimentacoes
+app.get('/api/getProdutosComEstoqueEMovimentacao', (req, res) => {
+    const query = 'SELECT p.id_produto, m.movimentacao_produto, p.valor_produto, e.qtd_produto_estoque FROM produtos p INNER JOIN estoque e ON p.id_produto = e.id_produto_estoque INNER JOIN movimentacao m ON p.id_produto = m.id_produto_movimentacao';
+
+    db.query(query, (err, result) => {
+        if (err) {
+            console.error('Erro ao obter os produtos com estoque e as movimentacoes:', err);
+            res.status(500).json({ error: 'Erro ao obter os produtos com estoque e as movimentacoes.' });
+        } else {
+            res.status(200).json(result);
+        }
+    });
+});
+
+// Pegar as requisições
+app.get('/api/getRequisicoes/:id', (req, res) => {
+    const id_requisicao = req.params.id;
+    const query = 'SELECT r.id_requisicao, u.nome_usuario, p.nome_produto, r.qtd_produto, r.desc_func, s.desc_status FROM requisicoes r INNER JOIN usuarios u ON r.id_usuario_requisicao = u.id_usuario INNER JOIN produtos p ON r.id_produto_requisicao = p.id_produto INNER JOIN status_prod s ON r.status_produto = s.id_status WHERE id_requisicao = ?';
+    const values = [id_requisicao];
+
+    db.query(query, (err, result) => {
+        if (err) {
+            console.error('Erro ao obter as requisicoes:', err);
+            res.status(500).json({ error: 'Erro ao obter as requisicoes.' });
+        } else {
+            res.status(200).json(result);
+        }
+    });
+});
+
+// Pegar as requisições onde o status for 1 -> "Pendente"
+app.get('/api/getRequisicoesPendente', (req, res) => {
+    const query = 'SELECT r.id_requisicao, u.nome_usuario, p.nome_produto, r.qtd_produto, r.desc_func, s.desc_status FROM requisicoes r INNER JOIN usuarios u ON r.id_usuario_requisicao = u.id_usuario INNER JOIN produtos p ON r.id_produto_requisicao = p.id_produto INNER JOIN status_prod s ON r.status_produto = s.id_status WHERE desc_status = "Pendente" ORDER BY r.id_requisicao';
+
+    db.query(query, (err, result) => {
+        if (err) {
+            console.error('Erro ao obter as movimentacoes:', err);
+            res.status(500).json({ error: 'Erro ao obter as movimentacoes.' });
+        } else {
+            res.status(200).json(result);
+        }
+    });
+});
+
+// Pegar as movimentacoes
+app.get('/api/getMovimentacoes', (req, res) => {
+    const query = 'SELECT m.id_movimentacao, p.nome_produto, m.qtd_movimentacao_produto, m.data_movimentacao_produto, m.movimentacao_produto, CASE WHEN m.movimentacao_produto = 1 THEN "Entrada" WHEN m.movimentacao_produto = 0 THEN "Saída" ELSE "ERRO" END as movimento FROM movimentacao m INNER JOIN produtos p ON m.id_produto_movimentacao = p.id_produto ORDER BY m.data_movimentacao_produto DESC';
+
+    db.query(query, (err, result) => {
+        if (err) {
+            console.error('Erro ao obter as movimentacoes:', err);
+            res.status(500).json({ error: 'Erro ao obter as movimentacoes.' });
+        } else {
+            res.status(200).json(result);
+        }
+    });
+});
+
+// Alterar as requisicoes para recusadas
+app.put('/api/updateRequisicoesParaRecusadas/:id', (req, res) => {
+    const id_requisicao = req.params.id;
+    const { desc_admin } = req.body;
+    const query = 'UPDATE requisicoes SET status_produto = 3, desc_admin = ? WHERE id_requisicao = ?';
+    const values = [desc_admin, id_requisicao];
+
+    // const id_produto = req.params.id;
+    // const { nome_produto, valor_produto } = req.body;
+    // const query = 'UPDATE produtos SET nome_produto = ?, valor_produto = ? WHERE id_produto = ?';
+    // const values = [nome_produto, valor_produto, id_produto];
+
+    db.query(query, values, (err, result) => {
+        if (err) {
+            console.error('Erro ao alterar a requisicao para Recusada:', err);
+            res.status(500).json({ error: 'Erro ao alterar a requisicao para Recusada.' });
+        } else {
+            if (result.affectedRows > 0) {
+                res.status(200).json({ message: 'Requisicao alterada para Recusada com sucesso.' });
+            } else {
+                res.status(404).json({ error: 'Requisicao não encontrado.' });
+            }
+        }
+    });
+});
+
+// Alterar as requisicoes para recusadas
+app.put('/api/updateRequisicoesParaAprovadas/:id', (req, res) => {
+    const id_requisicao = req.params.id;
+    const query = 'UPDATE requisicoes SET status_produto = 2 WHERE id_requisicao = ?';
+    const values = [id_requisicao];
+
+    db.query(query, values, (err, result) => {
+        if (err) {
+            console.error('Erro ao alterar a requisicao para Aprovada:', err);
+            res.status(500).json({ error: 'Erro ao alterar a requisicao para Recusada.' });
+        } else {
+            if (result.affectedRows > 0) {
+                res.status(200).json({ message: 'Requisicao alterada para Recusada com sucesso.' });
+            } else {
+                res.status(404).json({ error: 'Requisicao não encontrado.' });
+            }
+        }
+    });
+});
+
+// Pegar as requisicoes recusadas
+app.get('/api/getRequisicoesRecusadas', (req, res) => {
+    const query = 'SELECT r.id_requisicao, u.nome_usuario, p.nome_produto, r.qtd_produto, r.desc_admin, s.desc_status FROM requisicoes r INNER JOIN usuarios u ON r.id_usuario_requisicao = u.id_usuario INNER JOIN produtos p ON r.id_produto_requisicao = p.id_produto INNER JOIN status_prod s ON r.status_produto = s.id_status WHERE desc_status = "Reprovado"';
+
+    db.query(query, (err, result) => {
+        if (err) {
+            console.error('Erro ao obter as Requisicoes Recusadas:', err);
+            res.status(500).json({ error: 'Erro ao obter as Requisicoes Recusadas.' });
+        } else {
+            res.status(200).json(result);
+        }
+    });
+});
+
 // Cadastro de um produto
 app.post('/api/cadastrarProduto', (req, res) => {
-    const { nome_produto, valor_produto, qtd_produto_estoque } = req.body;
-    const query = 'INSERT INTO produtos (nome_produto, valor_produto) VALUES (?, ?)';
-    const values = [nome_produto, valor_produto];
+    const { nome_produto, valor_produto, qtd_produto_estoque, cod_aux } = req.body;
+    const query = 'INSERT INTO produtos (nome_produto, valor_produto, cod_aux) VALUES (?, ?, ?)';
+    const values = [nome_produto, valor_produto, cod_aux];
 
     db.query(query, values, (err, result) => {
         if (err) {
@@ -86,6 +254,54 @@ app.post('/api/cadastrarProduto', (req, res) => {
     });
 });
 
+// Cadastro de uma transferências
+app.post('/api/cadastrarMovimentacao', (req, res) => {
+    const { id_produto_movimentacao, movimentacao_produto, data_movimentacao_produto, qtd_movimentacao_produto } = req.body;
+    const query = 'INSERT INTO movimentacao (id_produto_movimentacao, movimentacao_produto, data_movimentacao_produto, qtd_movimentacao_produto) VALUES (?, ?, ?, ?)';
+    const values = [id_produto_movimentacao, movimentacao_produto, data_movimentacao_produto, qtd_movimentacao_produto];
+
+    db.query(query, values, (err, result) => {
+        if (err) {
+            console.error('Erro ao cadastrar a tranferencia:', err);
+            res.status(500).json({ error: 'Erro ao cadastrar a tranferencia.' });
+        } else {
+            res.status(200).json({ message: 'Tranferencia cadastrada com sucesso.' });
+        }
+    });
+});
+
+// Cadastro de um produto de FORNECEDOR
+app.post('/api/cadastrarProdutoFornecedor', (req, res) => {
+    const { registro, descricao, qtde, valor, aux } = req.body;
+    const query = 'INSERT INTO fornecedor_itens (registro, descricao, qtde, valor, aux) VALUES (?, ?, ?, ?, ?)';
+    const values = [registro, descricao, qtde, valor, aux];
+
+    db.query(query, values, (err, result) => {
+        if (err) {
+            console.error('Erro ao cadastrar o produto do fornecedor:', err);
+            res.status(500).json({ error: 'Erro ao cadastrar o produto do fornecedor.' });
+        } else {
+            res.status(200).json({ message: 'Produto cadastrado com sucesso.' });
+        }
+    });
+});
+
+// Cadastro de uma requisição
+app.post('/api/cadastrarRequisicao', (req, res) => {
+    const { id_usuario_requisicao, id_produto_requisicao, qtd_produto, status_produto, desc_func } = req.body;
+    const query = 'INSERT INTO requisicoes (id_usuario_requisicao, id_produto_requisicao, qtd_produto, status_produto, desc_func) VALUES (?, ?, ?, ?, ?)';
+    const values = [id_usuario_requisicao, id_produto_requisicao, qtd_produto, status_produto, desc_func];
+
+    db.query(query, values, (err, result) => {
+        if (err) {
+            console.error('Erro ao cadastrar a requisicao:', err);
+            res.status(500).json({ error: 'Erro ao cadastrar a requisicao.' });
+        } else {
+            res.status(200).json({ message: 'Requisicao cadastrada com sucesso.' });
+        }
+    });
+});
+
 // Edição de um produto
 app.put('/api/editarProduto/:id', (req, res) => {
     const id_produto = req.params.id;
@@ -100,6 +316,46 @@ app.put('/api/editarProduto/:id', (req, res) => {
         } else {
             if (result.affectedRows > 0) {
                 res.status(200).json({ message: 'Produto atualizado com sucesso.' });
+            } else {
+                res.status(404).json({ error: 'Produto não encontrado.' });
+            }
+        }
+    });
+});
+
+// Inserção de produtos no estoque
+app.put('/api/inserirEstoque', (req, res) => {
+    const { id_produto, qtd_produto } = req.body;
+    const query = 'UPDATE estoque SET qtd_produto_estoque = qtd_produto_estoque + ? WHERE id_produto_estoque = ?';
+    const values = [qtd_produto, id_produto];
+
+    db.query(query, values, (err, result) => {
+        if (err) {
+            console.error('Erro ao adicionar produtos ao estoque:', err);
+            res.status(500).json({ error: 'Erro ao adicionar produtos ao estoque.' });
+        } else {
+            if (result.affectedRows > 0) {
+                res.status(200).json({ message: 'Produto adicionado com sucesso.' });
+            } else {
+                res.status(404).json({ error: 'Produto não encontrado.' });
+            }
+        }
+    });
+});
+
+// Remoção de produtos no estoque
+app.put('/api/removerEstoque', (req, res) => {
+    const { id_produto, qtd_produto } = req.body;
+    const query = 'UPDATE estoque SET qtd_produto_estoque = qtd_produto_estoque - ? WHERE id_produto_estoque = ?';
+    const values = [qtd_produto, id_produto];
+
+    db.query(query, values, (err, result) => {
+        if (err) {
+            console.error('Erro ao remover produtos ao estoque:', err);
+            res.status(500).json({ error: 'Erro ao remover produtos ao estoque.' });
+        } else {
+            if (result.affectedRows > 0) {
+                res.status(200).json({ message: 'Produto removido com sucesso.' });
             } else {
                 res.status(404).json({ error: 'Produto não encontrado.' });
             }
@@ -163,7 +419,12 @@ app.get('/api/getUsuarios', (req, res) => {
 
 // Pegar os dados dos usuários juntamente com o seu nível de acesso
 app.get('/api/getUsuariosComNivel', (req, res) => {
-    const query = 'SELECT u.*, n.nome_acesso FROM usuarios AS u JOIN nivel_acessos AS n ON u.nivel_acesso_usuario = n.id_nivel_acesso';
+    const query = `
+      SELECT u.*, n.nome_acesso, s.nome_setor
+      FROM usuarios AS u
+      JOIN nivel_acessos AS n ON u.nivel_acesso_usuario = n.id_nivel_acesso
+      JOIN setor AS s ON u.setor_usuario = s.id_setor
+    `;
 
     db.query(query, (err, result) => {
         if (err) {
@@ -174,6 +435,7 @@ app.get('/api/getUsuariosComNivel', (req, res) => {
         }
     });
 });
+
 
 // Pegar os dados de um usuário pelo ID
 app.get('/api/getUsuarios/:id', (req, res) => {
@@ -237,9 +499,9 @@ app.delete('/api/excluirUsuario/:id', (req, res) => {
 
 // Cadastrar um usuário
 app.post('/api/cadastrarUsuario', (req, res) => {
-    const { login_usuario, nome_usuario, senha_usuario, nivel_acesso_usuario } = req.body;
-    const query = 'INSERT INTO usuarios (login_usuario, nome_usuario, senha_usuario, nivel_acesso_usuario) VALUES (?, ?, ?, ?)';
-    const values = [login_usuario, nome_usuario, senha_usuario, nivel_acesso_usuario];
+    const { login_usuario, nome_usuario, senha_usuario, nivel_acesso_usuario, setor_usuario } = req.body;
+    const query = 'INSERT INTO usuarios (login_usuario, nome_usuario, senha_usuario, nivel_acesso_usuario, setor_usuario) VALUES (?, ?, ?, ?, ?)';
+    const values = [login_usuario, nome_usuario, senha_usuario, nivel_acesso_usuario, setor_usuario];
 
     db.query(query, values, (err, result) => {
         if (err) {
@@ -251,6 +513,22 @@ app.post('/api/cadastrarUsuario', (req, res) => {
     });
 });
 
+// Cadastrar uma requisicao
+app.post('/api/cadastrarRequisicao', (req, res) => {
+    const { id_usuario_requisicao, id_produto_requisicao, qtd_produto, status_produto } = req.body;
+    const query = 'INSERT INTO requisicoes (id_usuario_requisicao, id_produto_requisicao, qtd_produto, status_produto) VALUES (?, ?, ?, ?)';
+    const values = [id_usuario_requisicao, id_produto_requisicao, qtd_produto, status_produto];
+
+    db.query(query, values, (err, result) => {
+        if (err) {
+            console.error('Erro ao cadastrar uma requisicao:', err);
+            res.status(500).json({ error: 'Erro ao cadastrar uma requisicao.' });
+        } else {
+            res.status(200).json({ message: 'Requisicao cadastrada com sucesso.' });
+        }
+    });
+});
+
 // Autenticação do usuário
 app.post('/api/login', (req, res) => {
     const { usuario, senha } = req.body;
@@ -258,15 +536,110 @@ app.post('/api/login', (req, res) => {
 
     db.query(query, [usuario, senha], (error, results) => {
         if (error) {
-            console.log(error);
-            res.status(500).json({ success: false });
+          console.log(error);
+          res.status(500).json({ success: false });
         } else {
-            if (results.length > 0) {
-                // Login bem-sucedido
-                res.status(200).json({ success: true });
+          if (results.length > 0) {
+            const { id_usuario, nome_usuario, nivel_acesso_usuario } = results[0]; // Recupera o campo nome_usuario do primeiro resultado
+            res.status(200).json({ success: true, id_usuario, nome_usuario, nivel_acesso_usuario });
+          } else {
+            res.status(200).json({ success: false });
+          }
+        }
+      });      
+});
+
+///////////////////////////////////////////////////////////////////////////
+
+//                   OPERAÇÕES RELACIONADAS A SETORES                    //
+
+///////////////////////////////////////////////////////////////////////////
+
+// Obter todos os setores
+app.get('/api/getSetores', (req, res) => {
+    const query = 'SELECT * FROM setor';
+
+    db.query(query, (err, result) => {
+        if (err) {
+            console.error('Erro ao obter os setores:', err);
+            res.status(500).json({ error: 'Erro ao obter os setores.' });
+        } else {
+            res.status(200).json(result);
+        }
+    });
+});
+
+// Obter o setor pelo seu ID
+app.get('/api/getSetor/:id', (req, res) => {
+    const id_setor = req.params.id;
+    const query = 'SELECT * FROM setor WHERE id_setor = ?';
+
+    db.query(query, [id_setor], (err, result) => {
+        if (err) {
+            console.error('Erro ao obter o setor:', err);
+            res.status(500).json({ error: 'Erro ao obter o setor.' });
+        } else {
+            if (result.length > 0) {
+                const setor = result[0];
+                res.status(200).json(setor);
             } else {
-                // Credenciais inválidas
-                res.status(200).json({ success: false });
+                res.status(404).json({ error: 'Setor não encontrado.' });
+            }
+        }
+    });
+});
+
+// Cadastrar setor
+app.post('/api/cadastrarSetor', (req, res) => {
+    const { nome_setor } = req.body;
+    const query = 'INSERT INTO setor (nome_setor) VALUES (?)';
+    const values = [nome_setor];
+
+    db.query(query, values, (err, result) => {
+        if (err) {
+            console.error('Erro ao cadastrar o setor:', err);
+            res.status(500).json({ error: 'Erro ao cadastrar o setor.' });
+        } else {
+            res.status(201).json({ message: 'Setor cadastrado com sucesso.' });
+        }
+    });
+});
+
+// Editar setor
+app.put('/api/editarSetor/:id', (req, res) => {
+    const id_setor = req.params.id;
+    const { nome_setor } = req.body;
+    const query = 'UPDATE setor SET nome_setor = ? WHERE id_setor = ?';
+    const values = [nome_setor, id_setor];
+
+    db.query(query, values, (err, result) => {
+        if (err) {
+            console.error('Erro ao editar o setor:', err);
+            res.status(500).json({ error: 'Erro ao editar o setor.' });
+        } else {
+            if (result.affectedRows > 0) {
+                res.status(200).json({ message: 'Setor atualizado com sucesso.' });
+            } else {
+                res.status(404).json({ error: 'Setor não encontrado.' });
+            }
+        }
+    });
+});
+
+// Excluir setor
+app.delete('/api/excluirSetor/:id', (req, res) => {
+    const id_setor = req.params.id;
+    const query = 'DELETE FROM setor WHERE id_setor = ?';
+
+    db.query(query, [id_setor], (err, result) => {
+        if (err) {
+            console.error('Erro ao excluir o setor:', err);
+            res.status(500).json({ error: 'Erro ao excluir o setor.' });
+        } else {
+            if (result.affectedRows > 0) {
+                res.status(200).json({ message: 'Setor excluído com sucesso.' });
+            } else {
+                res.status(404).json({ error: 'Setor não encontrado.' });
             }
         }
     });
