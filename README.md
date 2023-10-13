@@ -1,6 +1,6 @@
 <!--te-->
 <h1 align="center">
-  Projeto "StockEasy" 🚀 Concluido 
+  Projeto "StockEasy" Finalizado 
 </h1>
 
 ### Rodando o Projeto 
@@ -45,8 +45,9 @@ As seguintes ferramentas foram utilizadas no desenvolvimento deste projeto:
 - [ReactJS](https://pt-br.reactjs.org/)
 - [NodeJS](https://nodejs.org/en/)
 - [Figma](https://www.figma.com/file/P25CE5hB9pVXozQZVpwwis/Untitled?type=design&node-id=0%3A1&t=g0tTvW62em3QJZfY-1)
-
-
+- [MySQL Workbench](https://www.mysql.com/products/workbench/)
+- [Github Actions](https://docs.github.com/pt/actions)
+  
 ---
 
 Made by:
