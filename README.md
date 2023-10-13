@@ -1,6 +1,6 @@
 <!--te-->
 <h1 align="center">
-  Projeto "StockEasy" Finalizado 
+  Projeto "StockEasy" Concluído 
 </h1>
 
 ### Rodando o Projeto 
