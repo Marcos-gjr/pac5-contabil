@@ -1,6 +1,6 @@
 <!--te-->
 <h1 align="center">
-  Projeto "StockEasy" 🚀 Em desenvolvimento... 
+  Projeto "StockEasy" 🚀 Concluido 
 </h1>
 
 ### Rodando o Projeto 
